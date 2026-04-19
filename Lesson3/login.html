@@ -17,7 +17,10 @@
             <h2>Đăng nhập</h2>
         </div>
         
-        <form action="index.html" method="GET" id="login-form">
+        <!-- Thông báo lỗi (mặc định ẩn) -->
+        <div id="error-message" style="display:none; color:#e74c3c; background:#fdecea; padding:10px; border-radius:8px; margin-bottom:15px; font-size:14px; text-align:center;"></div>
+        
+        <form id="login-form">
             <div class="input-group">
                 <i class="far fa-envelope"></i>
                 <input type="email" class="form-control" placeholder="Email" required>
@@ -35,5 +38,14 @@
             Chưa có tài khoản? <a href="register.html">Đăng ký</a>
         </div>
     </div>
+
+    <!-- Firebase SDK (Version 10.13.1 Compat for vanilla JS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.13.1/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-firestore-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/12.3.0/firebase-storage-compat.min.js"></script>
+    <!-- Firebase Auth  -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.13.1/firebase-auth-compat.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/login.js"></script>
 </body>
 </html>
