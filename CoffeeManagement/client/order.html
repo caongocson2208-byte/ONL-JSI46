@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Danh sách đơn hàng</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body class="order-page">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="logo"><i class="fas fa-bolt"></i> Cafe</div>
+      <nav class="nav-links">
+        <a href="index.html">Trang chủ</a>
+        <a href="#">Menu</a>
+        <a href="order.html" class="active"><i class="fas fa-shopping-bag"></i></a>
+        <div class="dropdown" id="user-dropdown">
+          <a href="#"><i class="far fa-user"></i> <span id="nav-username"></span> <i class="fas fa-caret-down"></i></a>
+
+          <!-- Khi chưa đăng nhập (Guest) -->
+          <div class="dropdown-content" id="guest-menu">
+            <a href="login.html">Đăng nhập</a>
+            <a href="register.html">Đăng ký</a>
+          </div>
+
+          <!-- Khi đã đăng nhập (Logged In) -->
+          <div class="dropdown-content" id="user-menu" style="display: none">
+            <a href="order.html"><i class="fas fa-receipt"></i> Đơn hàng</a>
+            <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="order-container">
+      <h2>Danh sách đơn hàng</h2>
+
+      <div id="order-list" class="order-list">
+        <!-- Đơn hàng sẽ được render ở đây bằng Javascript -->
+      </div>
+    </main>
+
+    <!-- Firebase SDK (Version 10.13.1 Compat for vanilla JS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.13.1/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.13.1/firebase-auth-compat.min.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/order.js"></script>
+  </body>
+</html>
