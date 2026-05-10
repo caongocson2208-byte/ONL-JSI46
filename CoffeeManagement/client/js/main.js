@@ -1,13 +1,10 @@
-// Lấy tên hiển thị cho navbar
 const getUserName = user =>
   user.displayName || user.email?.split("@")[0] || "Bạn";
 
-// Cập nhật giao diện navbar theo trạng thái đăng nhập
 const setupNavbar = user => {
   const navUsername = document.getElementById("nav-username");
   const guestMenu = document.getElementById("guest-menu");
   const userMenu = document.getElementById("user-menu");
-
   const isLoggedIn = Boolean(user);
 
   if (navUsername)
@@ -20,17 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logout-btn");
   if (!logoutBtn) return;
 
-  // Xử lý đăng xuất
   logoutBtn.addEventListener("click", async e => {
     e.preventDefault();
-    try {
-      await firebase.auth().signOut();
-      window.location.href = "index.html";
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    await firebase.auth().signOut();
+    localStorage.removeItem("user_session");
+    window.location.href = "index.html";
   });
 });
 
-// Lắng nghe thay đổi trạng thái đăng nhập
 firebase.auth().onAuthStateChanged(setupNavbar);

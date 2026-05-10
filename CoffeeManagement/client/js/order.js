@@ -1,110 +1,73 @@
-// ===== order.js =====
+const STATUS_COLOR = {
+  "Chờ xác nhận": "#f39c12",
+  "Đang giao hàng": "#2980b9",
+  "Đã nhận hàng": "#27ae60",
+  "Đã hủy": "#e74c3c",
+};
 
-// Sample test data based exactly on the screenshot
-var userOrders = [
-  {
-    id: "order_1",
-    itemName: "Cà phê cốt dừa",
-    price: 40000,
-    date: "17:39 08/10/2024",
-    status: "Đã nhận hàng",
-    image:
-      "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?q=80&w=200&auto=format&fit=crop",
-  },
-  {
-    id: "order_2",
-    itemName: "Trà đào cam sả",
-    price: 90000,
-    date: "10:14 31/10/2024",
-    status: "Chờ xác nhận",
-    image:
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=200&auto=format&fit=crop",
-  },
-  {
-    id: "order_3",
-    itemName: "Trà đào cam sả",
-    price: 9000000, // Matching the screenshot exactly
-    date: "10:14 31/10/2024",
-    status: "Đang giao hàng",
-    image:
-      "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=200&auto=format&fit=crop",
-  },
-];
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
 
-function renderOrders() {
-  var orderList = document.getElementById("order-list");
-  orderList.innerHTML = ""; // Clear existing
+  const orderList = document.getElementById("order-list");
 
-  userOrders.forEach(function (order) {
-    var card = document.createElement("div");
-    card.className = "order-card-ui";
+  db.collection("orders")
+    .where("uid", "==", user.uid)
+    .onSnapshot(snapshot => {
+      if (snapshot.empty) {
+        orderList.innerHTML = `<p style="color:#999; text-align:center; margin-top:40px">Bạn chưa có đơn hàng nào.</p>`;
+        return;
+      }
 
-    // Main content wrapper
-    var contentWrapper = document.createElement("div");
-    contentWrapper.className = "order-content-wrapper";
+      // Sort client-side để không cần composite index
+      const docs = snapshot.docs.sort((a, b) => {
+        const tA = a.data().createdAt?.seconds || 0;
+        const tB = b.data().createdAt?.seconds || 0;
+        return tB - tA;
+      });
 
-    // Image
-    var img = document.createElement("img");
-    img.className = "order-img";
-    img.src = order.image;
-    img.alt = order.itemName;
+      orderList.innerHTML = "";
+      docs.forEach(doc => {
+        const o = doc.data();
+        const color = STATUS_COLOR[o.status] || "#999";
 
-    // Details
-    var details = document.createElement("div");
-    details.className = "order-details";
+        const card = document.createElement("div");
+        card.className = "order-card-ui";
+        card.innerHTML = `
+                    <div class="order-content-wrapper">
+                        <img class="order-img" src="${o.productImage}" alt="${o.productName}">
+                        <div class="order-details">
+                            <h3>${o.productName}</h3>
+                            <p>Tổng tiền: <strong>${Number(o.price).toLocaleString("vi-VN")}đ</strong></p>
+                            <p>Ngày đặt: ${o.createdAt ? o.createdAt.toDate().toLocaleString("vi-VN") : "..."}</p>
+                            <p>Trạng thái: <strong style="color:${color}">${o.status}</strong></p>
+                        </div>
+                    </div>
+                    ${
+                      o.status === "Chờ xác nhận"
+                        ? `
+                    <div class="order-btn-wrapper">
+                        <button class="btn-cancel-order" data-id="${doc.id}">Hủy đơn</button>
+                    </div>`
+                        : ""
+                    }`;
 
-    var title = document.createElement("h3");
-    title.textContent = order.itemName;
+        orderList.appendChild(card);
+      });
 
-    var price = document.createElement("p");
-    price.textContent = "Tổng tiền: " + order.price;
-
-    var date = document.createElement("p");
-    date.textContent = "Ngày đặt: " + order.date;
-
-    var status = document.createElement("p");
-    status.innerHTML = "Trạng thái: <i>" + order.status + "</i>";
-
-    details.appendChild(title);
-    details.appendChild(price);
-    details.appendChild(date);
-    details.appendChild(status);
-
-    contentWrapper.appendChild(img);
-    contentWrapper.appendChild(details);
-    card.appendChild(contentWrapper);
-
-    // Cancel Button (Only for "Chờ xác nhận")
-    if (order.status === "Chờ xác nhận") {
-      var btnDiv = document.createElement("div");
-      btnDiv.className = "order-btn-wrapper";
-
-      var cancelBtn = document.createElement("button");
-      cancelBtn.className = "btn-cancel-order";
-      cancelBtn.textContent = "Hủy đơn";
-      cancelBtn.onclick = function () {
-        if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
-          alert("Đã hủy đơn hàng: " + order.itemName);
-          // Update state to render update
-          order.status = "Đã hủy";
-          renderOrders();
-        }
-      };
-      btnDiv.appendChild(cancelBtn);
-      card.appendChild(btnDiv);
-    }
-
-    orderList.appendChild(card);
-  });
-}
-
-// Redirect guests to login if they try to access order page
-document.addEventListener("DOMContentLoaded", function () {
-  firebase.auth().onAuthStateChanged(function (user) {
-    if (!user) {
-      window.location.href = "login.html";
-    } else {
-      renderOrders();
-    }
-  });
+      document.querySelectorAll(".btn-cancel-order").forEach(btn => {
+        btn.addEventListener("click", () => cancelOrder(btn.dataset.id));
+      });
+    });
 });
+
+async function cancelOrder(orderId) {
+  if (!confirm("Bạn có chắc chắn muốn hủy đơn hàng này?")) return;
+  try {
+    await db.collection("orders").doc(orderId).update({ status: "Đã hủy" });
+  } catch (err) {
+    alert("Hủy đơn thất bại: " + err.message);
+  }
+}
