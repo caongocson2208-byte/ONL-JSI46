@@ -61,7 +61,7 @@ productForm.addEventListener("submit", async e => {
     const formData = new FormData();
     formData.append("image", image);
 
-    const res  = await fetch("http://localhost:3002/upload", { method: "POST", body: formData });
+    const res  = await fetch("http://localhost:3005/upload", { method: "POST", body: formData });
     const data = await res.json();
 
     if (!data.success) throw new Error(data.message);
